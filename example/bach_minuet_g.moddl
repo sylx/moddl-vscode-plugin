@@ -1,0 +1,70 @@
+// メロディー用のインストゥルメント（より豊かな音色）
+@let :mainInst, (sawOsc + pulseOsc { duty: 0.3 }) * 0.5 * adsrEnv { 
+    attack: 0.01,
+    decay: 0.1,
+    sustain: 0.7,
+    release: 0.2
+} | lpf { freq: 2000, q: 2 }
+
+// 和音用のインストゥルメント（ソフトな音色）
+@let :chordInst, sineOsc * adsrEnv {
+    attack: 0.05,
+    decay: 0.1,
+    sustain: 0.5,
+    release: 0.2
+}
+
+// ベース用のインストゥルメント（しっかりした低音）
+@let :bassInst, (sineOsc + triangleOsc * 0.3) * adsrEnv {
+    attack: 0.02,
+    decay: 0.15,
+    sustain: 0.6,
+    release: 0.3
+} | lpf { freq: 800, q: 1 }
+
+// インストゥルメントの割り当て
+@instrument ^m, mainInst   // メロディー
+@instrument ^c, chordInst  // 和音
+@instrument ^b, bassInst   // ベース
+
+// テンポ設定
+@tempo 108
+
+// メロディーパート
+m o4l4 V15 v15
+// 第1小節-第4小節
+m d8g8a8b8 >c8<b8a8g8
+m g8d8g8a8 b8a8g8f+8
+m g8>d8<b8>c8 d8<a8b8>c8
+m <b8>c8<a8b8 g2
+// 第5小節-第8小節
+m >d8g8a8b8 >c8<b8a8g8
+m g8d8g8a8 b8a8g8f+8
+m g8d8b8>c8 d8<a8b8>c8
+m <b8>c8<a8b8 g2
+
+// 和音パート（内声部）
+c o4l4 V10 v10
+// 第1小節-第4小節
+c r8b8>c8d8 e8d8c8<b8
+c b8g8b8>c8 d8c8<b8a8
+c b8>g8d8e8 f+8d8e8e8
+c d8e8c8d8 <b2
+// 第5小節-第8小節
+c r8b8>c8d8 e8d8c8<b8
+c b8g8b8>c8 d8c8<b8a8
+c b8g8>d8e8 f+8d8e8e8
+c d8e8c8d8 <b2
+
+// ベースパート（より動きのある伴奏）
+b o3l4 V12 v12
+// 第1小節-第4小節
+b g8>d8<g8>d8< g8>d8<g8>d8<
+b g8>d8<g8>d8< g8d8g8d8
+b g8>g8<g8>g8< d8a8d8a8
+b g8>g8<d8>d8< g2
+// 第5小節-第8小節
+b g8>d8<g8>d8< g8>d8<g8>d8<
+b g8>d8<g8>d8< g8d8g8d8
+b g8>g8<g8>g8< d8a8d8a8
+b g8>g8<d8>d8< g2
