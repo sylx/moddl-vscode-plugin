@@ -1,0 +1,375 @@
+@option :defaultLabels
+@tempo 160
+
+// YM2413 の音量は指数になっているようなので実装してみた
+// （instrument に vol をかけ、全ての vX を yv,X に置換すると使える）が、
+// 小さい音が小さくなりすぎるので、なんか違うっぽい…
+// http://ngs.no.coocan.jp/doc/wiki.cgi/datapack?page=3%2E4+YM2413%28OPLL%29
+// v14 で -3dB（= 1/sqrt(2)）、-13 で -6dB（= 1/2）みたいになるのかと思ったが誤解してるのかな
+@let :vol, 2 ^ ((15@v - 15) / 2)
+
+@let :octaveOffset, 0@octaveOffset
+@let :filteredPulse, =f=> (f * 2^octaveOffset) | pulseOsc | lpf { 5 * (f * 2^octaveOffset), 1 } * 0.5
+@let :bend, =f=> f * 2 ^ (0@bend / 1200)
+
+@instrument ^abcdefghi, bend | filteredPulse * adsrEnv { initial: 0.5, attack: 0.1, decay: 1, sustain: 0.3, release: 0.3 } // * vol
+
+@let :r6, 18 // sound 6, 18
+// PSG のレジスタ 6 はノイズの周波数（扱い方として↓これでいいのか自信ないが）
+@instrument ^j, uniformNoise | sampleCrush { 111860.78125 / r6 } * adsrEnv { decay: 500@m * 143.03493 / 1000000, sustain: 0 }
+
+ ////
+//// init
+
+a o4l8v14
+b o4l8v13
+g l8v14
+h l8v12
+
+// FORZ=0TO8:POKE&HFA2C+Z*16,50-(ZMOD2)*50:NEXT
+acegi @d19.53125 // 50 * 100 / 256
+
+ ////
+//// (0)
+
+b r16
+
+ab ga l4b->cdl24f8^ef e2.l8cd d+dc4f4d4 e2.ef gfd+4b-4f4 g2.d+f gfd+4b-4f4e4.d16e16 d1.....
+
+a r1^1^1^-1..... // supplement
+b r1^1^1^-1.....^-16 // supplement
+
+c o3l4v12
+d o2l4v12
+
+cd r g>d<b-b> c2.c8<b-8 g+>d+<b->f c2.l8c<b- g+>d+g+4<b->fb-4 cg>gl24fgfe4l8<c<b- g+>d+g+gb-g+<b->faedev10/* @2 */yduty,0.1b->cfegf agb-a>c<b-> dc<b->c<ab- gafgef
+
+e o4l4v13
+e r defl24a8^ga g2.l8ef gfd+4g+4b-4 g2.gb-> c<b-g4>d4c4< b-2.gg> c<b-g4>d4< b-4a4.g16a16 g1.....q8
+e r1^1^1^-1..... // supplement
+
+f q6v12o4l8
+f r4 fa>e<f>d<f>c<f l24b->c<v11b->c<v10b->c<v9b->c<v8b->c<v7b->c<l8v12b-f>c<f cd+g>c+dfa<b- bgegbe>cd d+cgcfgdf efl24efel8de<g>cd d+dc<b->fd+ dcc+4.c16c+16 c2.< b2. b-2. b2.
+
+h r16
+gh q7o2l8r4r1r1r1r1r1r1r1.g>dgr8gd<g>dgr8gd<g>dgr8gd<g4c4
+g d4
+h d
+h r16 // supplement
+
+i v11o4l8
+i r4 g>dcd<b->d<a>d c<g>d<g>d+dc<b- g+>fd+fcgfg l12c<g>cd<g>dl8edcd d+fg>c<b-gfdcgfgdb-af <b->cdfd+gfg
+i f+dfd l12f+dfdl12f+dfdl16f+dfdl16f+dfdl24f+dfdl24f+dfdl24f+dfdl24f+dfdl32f+dfdl32f+>f+<v7f+>f+<v6f+>f+<v5f+>f+<v4f+>f+<v3f+>f+v2<f+>f+
+// ↑テンポずれを起こす音長は変えてある。オリジナルは 10, 12, 16, 20, 22, 24, 26, 28, 30, 32
+
+i r1^1^1^-3^-3^-4^-4^-6^-6^-6^-6^-8^-32^-32^-32^-32^-32^-32^-32^-32^-32^-32^-32^-32^-32^-32 // supplement
+// 必要な素因数を tickPerBar に全部かけるとひどい値になるので諦めた↓
+// 384 * 5 * 11 * 13 * 7 = 1921920
+j r4 [6 r1] r1. [4 r2.] 
+
+//@solo ^aghi
+
+
+ ////
+//// (1)
+
+// a(1) 冒頭で変数 v1 を実行することで、@63 は E.PIANO から S.ORGAN に切り替わる。
+// S.ORGAN は E.PIANO より 2 オクターブ低く聞こえる音色のようなので、とりあえずそこだけ合わせる（あと音色もちょっと変える）
+abcdefghi yoctaveOffset,-2 yduty,0.25
+
+ab l8
+b r16
+
+// TODO 変数 v1 を適用
+ab o6q6gab->cdg l24f2r8fef l8e4.ccd d+dc<b-af gab->cdg l24fgf^4l8d+d+f
+//a d4&d&d&d&d&d&d&d&d&d // TODO bend
+a d4&ybend,-12d&ybend,-24d&ybend,-36d&ybend,-48d&ybend,-60d&ybend,-72d&ybend,-84d&ybend,-96d&ybend,-108d // TODO bend 仮
+b d1
+
+a r8 // supplement
+b r2^-16 // supplement
+a ybend,0
+
+cd v8q8 l2 yduty,0.5
+c o6f.a.b.b->c4<f.f.f.f+.
+d o6d.f.g.g  a4 d.d+.d.d+.
+
+e v8o5l2b-.>d.e.de4<b-.>c.<b-.b.
+
+// f="l8o5b->dgfg>d< l24b-2r8b-gb- l8g4.eef gfd+dc<a b->dgab->d c4.<b-b->c<b-2.&":i(1)="v13"+f+"y24,48&b-&y24,42&b-&y24,36&b-&y24,30&b-":f(1)="v11r16"+f+"b-2
+
+i v13
+f v11 r16
+if l8o5b->dgfg>d< l24b-2r8b-gb- l8g4.eef gfd+dc<a b->dgab->d c4.<b-b->c<b-2.&
+i b-&b-&b-&b- // TODO bend
+f b-2
+
+i r4 // supplement
+f r4^-16 // supplement
+
+// 320 g="g>dgr8gd<":h="q7o2l8rr1r1r1r1r1r1r1."+g+g+g+"g4c4d":g(0)="@63v14"+h+"4":h(0)="@63v12r16"+h
+// 330 h="o3"+g+"b->fb-r8b-f cg>c<ccd d+b->d+fc<f":g="<"+g+"g+>d+g+r8g+d+":g(1)=h+g+g:h(1)="r16"+g(1)+"16"
+h r16
+gh o3g>dgr8gd< b->fb-r8b-f cg>c<ccd d+b->d+fc<f< g>dgr8gd< g+>d+g+r8g+d+ <g>dgr8gd< g+>d+g+r8g+
+g d+
+h d+16
+
+j [8 r2.]
+
+ ////
+//// (2)
+
+// 途中からの演奏のため再設定しておく
+abcdefghi yoctaveOffset,-2 yduty,0.25
+
+ab o7l8q4
+b r16
+ab q4ccrcr4 r4cfcf ccrcr4 r<b->cc+d+e d+d+rd+r4 r4d+g+d+g+ d+d+rd+r4 r4c+4
+a d+4
+b d+
+b r16 // supplement
+
+// @48 ホルンのつもり（1 オクターブ低く鳴るのは YM2413 のデフォルト）
+// e は怪しいが原曲ママのはず…
+// y(34-36),32 は SUS ON
+cde yinitial,0 yattack,0.2 yduty,0.5 yoctaveOffset,-1
+c /*@48y34,32*/q4l8o6r4.v11g v9f r v7g v3f rv9g rv7f  rv5g >rv11c <v9b-r> v7c <v3b-r>v9c r<v7b- r>v5c <v11b-v9 g+ rv7b-  v3g+r v9b-rv7 g+ r v5b-rv3 g+ v11>d+v9c+r v7d+v3c+rv9d+rv7c+
+d /*@48y35,32*/q4l8o6r4.v11d+v9c+r v7d+v3c+rv9d+rv7c+ rv5d+ rv11g+ v9f+r  v7g+ v3f+r v9g+r v7f+ r v5g+ v11f+v9 e  rv7f+  v3e r v9f+rv7 e  r v5f+rv3 e  v11 b v9a r v7b v3a rv9b rv7a
+e /*@48y36,32*/q4l8o5r4.v11b-v9g+r v7b-v3g+rv9b-rv7g+ rv5b- rv11d+ v9c+r  v7d+ v3c+r v9d+r v7c+ r v5d+ v11c+v9<b->rv7c+< v3b r>v9c+rv7<b >r v5c+rv3<b >v11 f+v9e r v7f+v3e rv9f+rv7e
+
+if o6l8
+i v13
+f v11 r16
+// 300 f="q4ffr8fr rf>c<f>c< ffr8fr r8d+ff+g+a g+g+r8g+r rg+>d+<g+>d+< g+g+r8g+r rf+4g+":i(2)=f+"4":f(2)="r16"+f
+if q4ffrfr4 r4f>c<f>c< ffrfr4 rd+ff+g+a g+g+rg+r4 r4g+>d+<g+>d+< g+g+rg+r4 r4f+4
+i g+4
+f g+
+f r16 // supplement
+
+g l8v14
+h l8v12 r16
+gh o4
+gh c+4>c+rc+<g+ c+4>c+rc+<g+ f+4>f+rf+c+< f+4>f+rf+c+< e4>ere<b e4>ere<b a4>arae<a4>ara<
+g a
+h a16
+
+j [8 r2.]
+
+ ////
+//// (3)
+
+// 途中からの演奏のため再設定しておく
+abcdefghi yoctaveOffset,-2 yduty,0.25
+
+ab o7l8q4
+b r16
+ab f+f+rf+r4 r4f+bf+b f+f+rf+r4 q6r2e4 f+2. f2g+4 f+1^4.
+a r8 // supplement
+b r8^-16 // supplement
+
+// 240 c(3)="v5r8d+q7v10o6y34,0@63"+v1+"l1b&b4rb&b4b>c+4<b4b2.q2b-4q7b-2
+// 250 d(3)="v5r8bq7v10o6y35,0@63"+v1+"l1f+&f+4rg&g4g+g+4g+4g+2.q2g4q7g2
+// 260 e(3)="v5r8bq7v10o6y36,0@63"+v1+"l1d&d4re&e4ff4f4e2.q2e4q7e2
+
+// @48（ホルン）…最初の 1 発だけ
+cde yinitial,0 yattack,0.2 yduty,0.5 yoctaveOffset,-1
+cde l8
+
+// y(34-36),0 は SUS OFF
+c v5r8d+q7v10o6/*y34,0@63"+v1+"*/
+d v5r8b q7v10o6/*y35,0@63"+v1+"*/
+e v5r8b q7v10o6/*y36,0@63"+v1+"*/
+cde yinitial,0.5 yattack,0.1 yduty,0.25 yoctaveOffset,-2
+c l1b ^4r4b^4b >c+4<b 4b 2.q2b-4q7b-2
+d l1f+^4r4g^4g+ g+4 g+4g+2.q2g 4q7g 2
+e l1d ^4r4e^4f  f 4 f 4e 2.q2e 4q7e 2
+
+if o6l8
+i v13
+f v11 r16
+if bbrbr4 r4b>f+<b>f+< bbrbr4 q6r2a4 b2. b2b4 b2^b-16g+16 b-2
+i r4 // supplement
+f r4^-16 // supplement
+
+// 350 g(3)="g4>gr8gd< g4>gr8gd c4>cr8c<g c4>cr8c<g c+4>c+r8c+<g+ c+4>c+r8c+<g+< f+4>f+r8f+c+< q4f+r8<q8f+4.":h(3)="r16"+g(3)
+
+g l8v14
+h l8v12 r16
+gh o4
+gh g4>grgd< g4>grgd c4>crc<g c4>crc<g c+4>c+rc+<g+ c+4>c+rc+<g+< f+4>f+rf+c+< q4f+r<q8f+4.
+g r8 // supplement
+h r8^-16 // supplement
+
+j [8 r2.]
+
+ ////
+//// (4), (5)
+
+// 120 a="q4r8ar8q7a4.":b="r8q4g+r8q7g+4.":c="r8q4gr8q7g4.":a(4)="l8o6v12y32,32y33,32"+a+b+c+b+a+b+c+b:a(5)=a+b+c+b+a+b+c+"q4g+r8q7g+2":a(4)="@6"+a(4):b(4)="@16"+a(4):b(5)=a(5)
+// b(4)="@16@6 ..." となっている。一旦 @16（ビブラフォン）を指定しているのは何か意味があるのか？
+// @6, SUS ON
+abcde yoctaveOffset,-1
+
+ab l8o6v12
+ab [2 q4rarq7a4. rq4g+rq7g+4. r8q4grq7g4. rq4g+rq7g+4.]
+ab [2 q4rarq7a4. rq4g+rq7g+4. r8q4grq7g4. : rq4g+rq7g+4.] q4g+rq7g+2
+
+// 130 a="r8q4f+r8q7f+4.":b="r8q4er8q7e4.":c(4)="@6l8o6v10y34,32"+a+a+a+b+a+a+a+b:c(5)=a+a+a+b+a+a+a+"q4er8q7e2"
+c l8o6
+c [2 [3 rq4f+rq7f+4.] rq4erq7e4.]
+c [2 [3 rq4f+rq7f+4.] : rq4erq7e4.] q4erq7e2
+
+// a="r8q4er8q7e4.":b="r8q4dr8q7d4.":c="r8q4d+r8q7d+4.":d(4)="@6l8o6v10y35,32"+a+a+b+c+a+a+b+c:d(5)=a+a+b+c+a+a+b+"q4d+r8q7d+2"
+
+d l8o6v10
+d [2 [2 rq4erq7e4.] rq4drq7d4. rq4d+rq7d+4.]
+d [2 [2 rq4erq7e4.] rq4drq7d4. : rq4d+rq7d+4.] q4d+rq7d+2
+
+// 150 a="r8q4dr8q7d4.":b="o5r8q4br8q7b4.o6":e(4)="@6l8o6v10y36,32"+a+a+b+b+a+a+b+b:e(5)=a+a+b+b+a+a+b+"<q4br8q7b2"
+e l8o6v10
+e [2 [2 rq4drq7d4.] [2 o5rq4brq7b4.o6]]
+e [2 [2 rq4drq7d4.] : [2 o5rq4brq7b4.o6]] o5rq4brq7b4.o6 <q4brq7b2
+
+// 160 a="o2q7b4>q4br8bf+<":b="q7e4>q4er8e<b":c="q7f+4>f+c+<bf+":f=a+a+b+c+a+a+b:f(4)="@6l8v12y37,32"+f+c:g(4)="@33l8v10y38,32r16"+f+c+"16":f(5)=f+"f+r8q7f+2":g(5)="f16"+f+"f+r8q7f+4..
+
+// @6, SUS ON
+f yoctaveOffset,-1
+// @33, SUS ON
+g yoctaveOffset,-1
+
+f l8v12
+g l8v10 r16
+fg o2 [2 [2 q7b4>q4brbf+<] q7e4>q4ere<b q7f+4>f+c+<b:f+]
+f f+
+g f+^-16
+f l8v12
+g l8v10 f16 // 原曲ママだが多分 r16 の間違い
+fg o2 [2 [2 q7b4>q4brbf+<] q7e4>q4ere<b : q7f+4>f+c+<bf+]
+f f+rq7f+2
+g f+rq7f+4..
+
+// ↓スネア、これだけでいいんだろうか…なんか似ても似つかないのだが
+
+// 380 h="rb-b-":h(4)="q8o8v12l@63"+h+h+h+h+h+h+h+h:h(5)=h+h+h+h+h+h+h+"b-l24b-b-b-b-b-b-b-b-b-b-b-b-
+// 390 i="raa":i(4)="q8o8v12l@63"+i+i+i+i+i+i+i+i:i(5)=i+i+i+i+i+i+i+"al24aaaaaaaaaaaa
+hi yoctaveOffset,-2
+hi ydecay, 0.1
+hi q8o8v12l4
+h [8 rb-b-] 
+i [8 ra a ] 
+
+h [7 rb-b-] b-l24b-b-b-b-b-b-b-b-b-b-b-b-
+i [7 ra a ] a l24a a a a a a a a a a a a
+
+j o2l8
+j [8 ym,500ggym,2000>a4aym,500<a]
+j [7 ym,500ggym,2000>a4aym,500<a] >ym,2000a4l24aaaaaaaaaaaa
+
+
+ ////
+//// (6), (7), (8)
+
+// ModDL のテンポはグローバルなので、複数トラックで t を使うと意図しない結果になる可能性があるが、
+// ディレイトラック（ここでの a, c に対して b, d）であれば現状のテンポを遅れて設定するだけになるので実害はない
+
+// 400 a="t160@19l8ob>c+dc+def+ededc+ t164cdd+dd+fgfd+fd+d t168c+d+ed+ef+g+f+ef+ed+ t172defefgagfgfe t176d+ff+ff+g+b-g+f+g+f+f t180ef+gf+gabagagf+ t184fgg+gg+b->c<b-g+b-g+g t188f+g+ag+ab>c+<bab":a(6)="v14"+a+"ag+":b(6)="v12r6"+a
+
+// @19 (Engine 1)
+ab yoctaveOffset,-1 o4
+a v14
+b v12 r6
+ab t160l8b>c+dc+def+ededc+ t164cdd+dd+fgfd+fd+d t168c+d+ed+ef+g+f+ef+ed+ t172defefgagfgfe t176d+ff+ff+g+b-g+f+g+f+f t180ef+gf+gabagagf+ t184fgg+gg+b->c<b-g+b-g+g t188f+g+ag+ab>c+<bab
+a ag+
+b r4^-6 // supplement
+
+// 410 a="o5t192gab-ab->cdc<b->c<b-a t196g+b-bb-b>c+d+c+<b>c+<bb- t200ab>c<b>cdedcdc<b t204b->cc+cc+d+fd+c+d+c+c t208":b="<b>c+dc+def+ededc+":c="cdd+dd+fgfd+fd+d":a=a+b+"t212"+b+"t216"+b+"t220":a(7)=a+c:b(7)="r6"+a+"cdd+dd+fgfd+f"
+
+b r6
+ab @$b [b>c+dc+def+ededc+]
+// ↓ 定義位置の o 値が使われるので先に合わせておく必要がある
+ab > @$c_ [cdd+dd+fgfd+f] @$c [$c_ e-d] <
+ab o5t192gab-ab->cdc<b->c<b-a t196g+b-bb-b>c+d+c+<b>c+<bb- t200ab>c<b>cdedcdc<b t204b->cc+cc+d+fd+c+d+c+c t208$b t212$b t216$b t220
+a $c
+b $c_ r4^-6 // supplement
+
+// a="t232c+d+ed+ef+g+ef+g+ab l4t222b-&t212&b-&t202&b-&t192&b-&t182&b-&t172&b-":a(8)="t224"+c+"t228"+c+a:b(8)="r6"+a(8)+"32"
+b r6
+ab t224$c t228$c t232c+d+ed+ef+g+ef+g+ab l4t222b-&t212b-&t202b-&t192b-&t182b-&t172
+a b-
+b b-32
+b r4^-32^-6 // supplement
+
+
+// @19 (Engine 1)
+cd yoctaveOffset,-1 o4
+c v14
+d v12 r6
+
+// 430 a="t160@19l8of+g+ag+ab>c+<babag+ t164gab-ab->cdc<b->c<b-a t168g+b-bb-b>c+d+c+<b>c+<bb- t172ab>c<b>cdedcdc<b t176b->cc+cc+d+fd+c+d+c+c t180<b>c+dc+def+ededc+ t184cdd+dd+fgfd+fd+d t188c+d+ed+ef+g+f+ef+":c(6)="v14"+a+"ed+":d(6)="v12r6"+a
+
+cd t160l8f+g+ag+ab>c+<babag+ t164gab-ab->cdc<b->c<b-a t168g+b-bb-b>c+d+c+<b>c+<bb- t172ab>c<b>cdedcdc<b t176b->cc+cc+d+fd+c+d+c+c t180<b>c+dc+def+ededc+ t184cdd+dd+fgfd+fd+d t188c+d+ed+ef+g+f+ef+
+c ed+
+d r4^-6 // supplement
+
+d r6
+cd @$b [f+g+ag+ab>c+<babag+]
+cd @$c_ [gab-ab->cdc<b->c<] @$c [$c_ b-a]
+cd o5t192defefgagfgfe t196d+ff+ff+g+b-g+f+g+f+f t200ef+gf+gabagagf+ t204fgg+gg+b->c<b-g+b-g+g t208
+cd $b t212$b t216$b t220
+c $c
+d $c_ r4^-6 // supplement
+
+d r6
+// a="t232g+b-bb-b>c+d+<b>c+d+ef+ l4t222f&t212&f&t202&f&t192&f&t182&f&t172&f":c(8)="t224"+c+"t228"+c+a:d(8)="r6"+c(8)+"32"
+cd t224$c t228$c t232g+b-bb-b>c+d+<b>c+d+ef+ l4t222f&t212f&t202f&t192f&t182f&t172
+c f
+d f32
+d r4^-32^-6 // supplement
+//d <<f4^-32^-6>> // supplement
+
+// ここの t も本当はない方がいいが
+
+// @3 (Flute)
+efg yoctaveOffset,-1
+e q8t160v8o5l1d.t164d+.t168e.t172f.t176f+.t180g.t184g+.t188a.
+f q8t160v8o5l1c+.t164d.t168d+.t172e.t176f.t180f+.t184g.t188g+.
+g q8t160v8o4l1a.t164b-.t168b.t172>c.t176c+.t180d.t184d+.t188e.
+
+e t192b-.t196b.t200>c.t204c+.t208d.t212d.t216l8d2c+de4.c+det220d+4.cc+d+fdd+fgg+
+f t192a.t196b-.t200b.t204>c.t208c+.t212c+.t216l8<b2b-b>c+4.<ab>c+t220c4.<g+b->cd<b->cdd+f
+g t192f.t196f+.t200g.t204g+.t208a.t212a.t216l8a2g+ab4.g+abt220b-4.gg+b-b-fgg+b->c
+
+e t224ggrg2g4g4.t228ggrg2g4g4gt232f+2.g+2.t222f4&t212f4&t202f4t192f8rt182f4&t172f4
+f t224eere2e4e4.t228d+d+rd+2d+4d+4d+t232c+2.d+2.t222c+4&t212c+4&t202c+4t192c+8rt182c+4&t172c+4
+g t224ddrd2c4c4.t228ddrd2c4c4ct232<a2.b2.t222b-4&t212b-4&t202b-4t192b-8rt182b-4&t172b-4
+
+// @19 (Engine 1)
+hi yoctaveOffset,-1 o4
+hi q8t160v15o2l1b.t164>c.t168c+.t172d.t176d+.t180e.t184f.t188f+.
+hi t192g.t196g+.t200a.t204b-.t208b.t212a.l2t216e.f+.t220f.b-b4
+hi t224l1>c.<t228g+^4d+4l2t232d.e.l4t222f+&t212f+t202c+<t192f+8r8t182f+&t172f+
+
+ ////
+//// (9)
+
+// 580 a="t80@63"+v1+"q8l4o7rc+c2rc+c2rt72c+c2r8c+1.":a(9)="v9"+a:b(9)="v8r12"+a
+// 590 a="t80@63"+v1+"q8l4o6rf+g2rf+g2rt72f+g2r8f+1.":c(9)="v9"+a:d(9)="v8r12"+a
+
+// @63 (S.ORGAN)
+abcdefghi yoctaveOffset,-2 yduty,0.25
+
+a v9
+b v8r12
+ab t80q8l4o7rc+c2rc+c2rt72c+c2r8c+1.
+
+c v9
+d v8r12
+cd t80q8l4o6rf+g2rf+g2rt72f+g2r8f+1.
+
+e t80v9q8l4o6rb-a2rb-a2rt72b-a2r8b-1.
+f t80v9q8l4o6rd+d2rd+d2rt72d+e2r8d+1.
+g t80v9q8o6r1r1r4t72r2..a1.
+
+// 630 h(9)="@63"+v1+"t80v9q7ol8b2..f+b2..f+b4&t72&b4.l32f+4&y23,218&y24,213&f+&y23,198&y24,193&f+&y23,178&y24,173&f+&y23,158&y24,153&f+&y23,138&y24,133&f+&y23,118&y24,113&f+&y23,98&y24,93&f+&y23,78&y24,73&f+<q8b1.":i(9)=h(9)
+
+hi t80v9q7o4l8b2..f+b2..f+b4&t72b4.l32f+4&f+&f+&f+&f+&f+&f+&f+&f+<q8b1. // TODO bend
