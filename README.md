@@ -2,6 +2,20 @@
 
 Adds language support for ModDL files in Visual Studio Code, including syntax highlighting and playback controls.
 
+
+# What is ModDL?
+
+https://github.com/bolta/ModularAudioNative
+
+ModDL is a domain-specific programming language designed for music composition and synthesis. It combines traditional Music Macro Language (MML) notation with modern modular synthesis concepts. The language allows composers to define instruments using various oscillators, filters, and envelopes, while sequencing musical data through an MML-like syntax. ModDL supports both simple sound creation and complex audio processing through its module system, making it suitable for both beginners and experienced electronic musicians.
+Key features:
+
+Modular synthesis architecture
+Traditional MML-based sequencing
+Built-in effects processing
+Multi-track composition support
+WAV file export capability
+
 ## Features
 
 - Syntax highlighting for .moddl files
