@@ -1,0 +1,25 @@
+{
+  "name": "moddl",
+  "displayName": "moddl",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "moddl",
+      "aliases": ["moddl", "moddl"],
+      "extensions": [".moddl"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "moddl",
+      "scopeName": "source.moddl",
+      "path": "./syntaxes/moddl.tmLanguage.json"
+    }]
+  }
+}
