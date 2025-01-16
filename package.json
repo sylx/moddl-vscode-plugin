@@ -2,7 +2,7 @@
   "name": "moddl",
   "displayName": "ModDL Language Support",
   "description": "ModDL language support with syntax highlighting and playback controls",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "sylx",
   "private": true,
   "license": "MIT",
@@ -41,7 +41,12 @@
         "command": "moddl.stop",
         "title": "ModDL: Stop Playback",
         "icon": "$(stop)"
-      }
+      },
+      {
+        "command": "moddl.export",
+        "title": "ModDL: Export Audio File",
+        "icon": "$(save)"
+      }      
     ],
     "keybindings": [
       {
@@ -54,6 +59,12 @@
         "command": "moddl.stop",
         "key": "ctrl+shift+s",
         "mac": "cmd+shift+s",
+        "when": "editorLangId == moddl"
+      },
+      {
+        "command": "moddl.export",
+        "key": "ctrl+shift+o",
+        "mac": "cmd+shift+o",
         "when": "editorLangId == moddl"
       }
     ],
@@ -70,7 +81,18 @@
           "enum": ["audio", "stdout", "null"],
           "default": "audio",
           "description": "Default output type for ModDL playback"
-        }
+        },
+        "moddl.exportFormat": {
+          "type": "string",
+          "enum": ["wav", "mp3", "m4a"],
+          "default": "wav",
+          "description": "Default export format for audio files"
+        },
+        "moddl.ffmpegPath": {
+          "type": "string",
+          "default": "ffmpeg",
+          "description": "Path to ffmpeg executable (required for mp3/m4a export)"
+        }        
       }
     }
   },
