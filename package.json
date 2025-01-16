@@ -1,7 +1,7 @@
 {
   "name": "moddl",
-  "displayName": "moddl",
-  "description": "",
+  "displayName": "ModDL Language Support",
+  "description": "ModDL language support with syntax highlighting and playback controls",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.96.0"
@@ -9,10 +9,14 @@
   "categories": [
     "Programming Languages"
   ],
+  "activationEvents": [
+    "onLanguage:moddl"
+  ],
+  "main": "./out/extension.js",
   "contributes": {
     "languages": [{
       "id": "moddl",
-      "aliases": ["moddl", "moddl"],
+      "aliases": ["ModDL", "moddl"],
       "extensions": [".moddl"],
       "configuration": "./language-configuration.json"
     }],
@@ -20,6 +24,62 @@
       "language": "moddl",
       "scopeName": "source.moddl",
       "path": "./syntaxes/moddl.tmLanguage.json"
-    }]
+    }],
+    "commands": [
+      {
+        "command": "moddl.play",
+        "title": "ModDL: Play Current File",
+        "icon": "$(play)"
+      },
+      {
+        "command": "moddl.stop",
+        "title": "ModDL: Stop Playback",
+        "icon": "$(stop)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "moddl.play",
+        "key": "ctrl+shift+p",
+        "mac": "cmd+shift+p",
+        "when": "editorLangId == moddl"
+      },
+      {
+        "command": "moddl.stop",
+        "key": "ctrl+shift+s",
+        "mac": "cmd+shift+s",
+        "when": "editorLangId == moddl"
+      }
+    ],
+    "configuration": {
+      "title": "ModDL",
+      "properties": {
+        "moddl.executablePath": {
+          "type": "string",
+          "default": "moddl",
+          "description": "Path to the ModDL executable (moddl.exe)"
+        },
+        "moddl.defaultOutputType": {
+          "type": "string",
+          "enum": ["audio", "stdout", "null"],
+          "default": "audio",
+          "description": "Default output type for ModDL playback"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "lint": "eslint src --ext ts",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.7",
+    "@types/vscode": "^1.96.0",
+    "@typescript-eslint/eslint-plugin": "^5.42.0",
+    "@typescript-eslint/parser": "^5.42.0",
+    "eslint": "^8.26.0",
+    "typescript": "^4.8.4"
   }
 }

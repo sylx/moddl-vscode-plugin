@@ -2,3 +2,4 @@ node_modules
 *.vsix
 moddl_docs
 repomix-output.txt
+out
