@@ -1,65 +1,62 @@
-# moddl README
+# ModDL Language Support for Visual Studio Code
 
-This is the README for your extension "moddl". After writing up a brief description, we recommend including the following sections.
+Adds language support for ModDL files in Visual Studio Code, including syntax highlighting and playback controls.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+- Syntax highlighting for .moddl files
+- Play/Stop commands for ModDL files
+- Configurable ModDL executable path
+- Keyboard shortcuts for playback control
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- Visual Studio Code 1.96.0 or newer
+- ModDL executable (moddl.exe) installed and accessible in PATH, or configured in settings
 
-## Extension Settings
+## Installation
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+1. Download the .vsix file from the releases page
+2. Open VS Code
+3. Press Ctrl+Shift+P (Cmd+Shift+P on macOS)
+4. Type "Install from VSIX" and select it
+5. Navigate to the downloaded .vsix file and select it
 
-For example:
+## Configuration
 
-This extension contributes the following settings:
+You can configure the extension through VS Code's settings:
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+- `moddl.executablePath`: Path to the ModDL executable (default: "moddl")
+- `moddl.defaultOutputType`: Default output type for ModDL playback (options: "audio", "stdout", "null")
+
+## Usage
+
+### Playing ModDL Files
+
+1. Open a .moddl file
+2. Use one of these methods to play:
+   - Press Ctrl+Shift+P (Cmd+Shift+P on macOS)
+   - Use the command palette and search for "ModDL: Play Current File"
+
+### Stopping Playback
+
+1. Use one of these methods to stop:
+   - Press Ctrl+Shift+S (Cmd+Shift+S on macOS)
+   - Use the command palette and search for "ModDL: Stop Playback"
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+Please report issues on the GitHub repository.
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+### 0.1.0
 
-### 1.0.0
+Initial release with basic features:
+- Syntax highlighting
+- Play/Stop commands
+- Basic configuration options
 
-Initial release of ...
+## License
 
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+MIT License

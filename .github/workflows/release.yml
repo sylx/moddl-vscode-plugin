@@ -1,0 +1,46 @@
+name: Release VSCode Extension
+
+on:
+  push:
+    tags:
+      - 'release_*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: |
+          npm install
+          npm install -g @vscode/vsce
+          
+      - name: Build extension
+        run: npm run compile
+        
+      - name: Package extension
+        run: vsce package
+        
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/release_}" >> $GITHUB_ENV
+        
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ env.VERSION }}
+          files: |
+            *.vsix
+          draft: false
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+          generate_release_notes: true
