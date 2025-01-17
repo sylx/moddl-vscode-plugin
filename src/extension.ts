@@ -121,7 +121,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         // 既存の実行をキャンセル
         if (tokenSource) {
-            tokenSource.dispose();
+            tokenSource.cancel();
         }
         
         // 新しいトークンソースを作成
