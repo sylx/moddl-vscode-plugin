@@ -122,6 +122,10 @@ export function activate(context: vscode.ExtensionContext) {
         // 既存の実行をキャンセル
         if (tokenSource) {
             tokenSource.cancel();
+            //前の実行のfinallyでtokenSourceが破棄されるのを待つ
+            while (tokenSource) {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+            }
         }
         
         // 新しいトークンソースを作成
@@ -145,6 +149,8 @@ export function activate(context: vscode.ExtensionContext) {
     const stopCommand = vscode.commands.registerCommand('moddl.stop', () => {
         if (tokenSource) {
             tokenSource.cancel();
+        }else{
+            showLog('No playback to stop', 'stderr');
         }
     });
 
