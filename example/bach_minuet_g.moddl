@@ -1,10 +1,10 @@
 // メロディー用のインストゥルメント（より豊かな音色）
-@let :mainInst, (sawOsc + pulseOsc { duty: 0.3 }) * 0.5 * adsrEnv { 
+@let :mainInst, ((sawOsc + pulseOsc { duty: 0.3 }) * 0.5 * adsrEnv { 
     attack: 0.01,
     decay: 0.1,
     sustain: 0.7,
     release: 0.2
-} | lpf { freq: 2000, q: 2 }
+}) | lpf { freq: 2000, q: 2 }
 
 // 和音用のインストゥルメント（ソフトな音色）
 @let :chordInst, sineOsc * adsrEnv {
@@ -15,12 +15,12 @@
 }
 
 // ベース用のインストゥルメント（しっかりした低音）
-@let :bassInst, (sineOsc + triangleOsc * 0.3) * adsrEnv {
+@let :bassInst, ((sineOsc + triangleOsc * 0.3) * adsrEnv {
     attack: 0.02,
     decay: 0.15,
     sustain: 0.6,
     release: 0.3
-} | lpf { freq: 800, q: 1 }
+}) | lpf { freq: 800, q: 1 }
 
 // インストゥルメントの割り当て
 @instrument ^m, mainInst   // メロディー
