@@ -2,7 +2,7 @@
   "name": "moddl",
   "displayName": "ModDL Language Support",
   "description": "ModDL language support with syntax highlighting and playback controls",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "publisher": "sylx",
   "private": true,
   "license": "MIT",
