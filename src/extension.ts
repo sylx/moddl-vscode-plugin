@@ -4,8 +4,6 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
 
-let currentProcess: cp.ChildProcess | undefined;
-
 // Helper function to check if ffmpeg is available
 async function checkFfmpeg(ffmpegPath: string): Promise<boolean> {
     try {
@@ -31,6 +29,44 @@ function ensureDirectoryExists(filePath: string) {
         fs.mkdirSync(dirname, { recursive: true });
     }
 }
+
+// moddlのstderr,stdoutを処理する
+const showLog = (msg: string, mode: 'stdout' | 'stderr' = 'stdout') => {
+    console.log(mode, msg);
+    mode === 'stdout' ? vscode.window.showInformationMessage(msg) : vscode.window.showErrorMessage(msg);
+};
+
+// moddlコマンドを実行して、stdout,stderrを処理する
+const execModdl = (execPath: string, args: string[], token: vscode.CancellationToken): Promise<void> => {
+    return new Promise<void>((resolve, reject) => {
+        const process = cp.spawn(execPath, args);
+
+        // キャンセル時の処理
+        token.onCancellationRequested(() => {
+            process.kill();
+            reject(new Error('Operation cancelled'));
+        });
+
+        process.stdout?.on('data', (data) => {
+            showLog(data.toString(), 'stdout');
+        });
+
+        process.stderr?.on('data', (data) => {
+            showLog(data.toString(), 'stderr');
+        });
+
+        process.on('close', (code) => {
+            if (code !== 0) {
+                reject(new Error(`ModDL process exited with code ${code}`));
+            }
+            resolve();
+        });
+
+        process.on('error', (err) => {
+            reject(err);
+        });
+    });
+};
 
 async function convertAudioFormat(inputPath: string, outputPath: string, ffmpegPath: string): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -58,15 +94,24 @@ async function convertAudioFormat(inputPath: string, outputPath: string, ffmpegP
     });
 }
 
+const checkEditorIsModdlMode = (editor: vscode.TextEditor | undefined) => {
+    if (!editor || editor.document.languageId !== 'moddl') {
+        vscode.window.showErrorMessage('No ModDL file is active');
+        return false;
+    }
+    return true;
+};
+
 export function activate(context: vscode.ExtensionContext) {
+    // キャンセルトークンソースを保持
+    let tokenSource: vscode.CancellationTokenSource | undefined;
+
     // Existing play command
-    let playCommand = vscode.commands.registerCommand('moddl.play', async () => {
-        const editor = vscode.window.activeTextEditor;
-        if (!editor || editor.document.languageId !== 'moddl') {
-            vscode.window.showErrorMessage('No ModDL file is active');
+    const playCommand = vscode.commands.registerCommand('moddl.play', async () => {
+        const editor = vscode.window.activeTextEditor as vscode.TextEditor;
+        if (!checkEditorIsModdlMode(editor)) {
             return;
         }
-
         await editor.document.save();
         const filePath = editor.document.uri.fsPath;
 
@@ -74,50 +119,39 @@ export function activate(context: vscode.ExtensionContext) {
         const execPath = config.get<string>('executablePath') || 'moddl';
         const outputType = config.get<string>('defaultOutputType') || 'audio';
 
+        // 既存の実行をキャンセル
+        if (tokenSource) {
+            tokenSource.dispose();
+        }
+        
+        // 新しいトークンソースを作成
+        tokenSource = new vscode.CancellationTokenSource();
+
         try {
-            if (currentProcess) {
-                currentProcess.kill();
-                currentProcess = undefined;
+            await execModdl(execPath, [`--output=${outputType}`, filePath], tokenSource.token);
+        } catch (error) {
+            if (tokenSource.token.isCancellationRequested) {
+                vscode.window.showInformationMessage('ModDL playback stopped');
+            } else {
+                throw error;
             }
-
-            currentProcess = cp.spawn(execPath, [
-                `--output=${outputType}`,
-                filePath
-            ]);
-
-            currentProcess.stdout?.on('data', (data) => {
-                console.log(`ModDL output: ${data}`);
-            });
-
-            currentProcess.stderr?.on('data', (data) => {
-                console.error(`ModDL error: ${data}`);
-                vscode.window.showErrorMessage(`ModDL error: ${data}`);
-            });
-
-            currentProcess.on('error', (err) => {
-                vscode.window.showErrorMessage(`Failed to start ModDL: ${err.message}`);
-            });
-
-            vscode.window.showInformationMessage('ModDL playback started');
-        } catch (err) {
-            vscode.window.showErrorMessage(`Failed to execute ModDL: ${err}`);
+        } finally {
+            tokenSource.dispose();
+            tokenSource = undefined;
         }
     });
 
     // Existing stop command
-    let stopCommand = vscode.commands.registerCommand('moddl.stop', () => {
-        if (currentProcess) {
-            currentProcess.kill();
-            currentProcess = undefined;
-            vscode.window.showInformationMessage('ModDL playback stopped');
+    const stopCommand = vscode.commands.registerCommand('moddl.stop', () => {
+        if (tokenSource) {
+            tokenSource.cancel();
         }
     });
 
     // New export command
-    let exportCommand = vscode.commands.registerCommand('moddl.export', async () => {
-        const editor = vscode.window.activeTextEditor;
-        if (!editor || editor.document.languageId !== 'moddl') {
-            vscode.window.showErrorMessage('No ModDL file is active');
+    const exportCommand = vscode.commands.registerCommand('moddl.export', async () => {
+        const editor = vscode.window.activeTextEditor as vscode.TextEditor;
+        if (!checkEditorIsModdlMode(editor)) {
             return;
         }
 
@@ -153,41 +187,28 @@ export function activate(context: vscode.ExtensionContext) {
         const outputPath = saveUri.fsPath;
         ensureDirectoryExists(outputPath);
 
+        // Export用の新しいトークンソース
+        const exportTokenSource = new vscode.CancellationTokenSource();
+
         try {
             // Create progress notification
             await vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 title: "Exporting audio file...",
-                cancellable: false
-            }, async (progress) => {
+                cancellable: true
+            }, async (progress, token) => {
                 // First export as WAV if needed
-                const tempWavPath = exportFormat === 'wav' ? 
-                    outputPath : 
+                const tempWavPath = exportFormat === 'wav' ?
+                    outputPath :
                     path.join(os.tmpdir(), `${path.basename(sourceFilePath, '.moddl')}_temp.wav`);
 
                 progress.report({ message: "Generating audio..." });
 
                 // Run ModDL to generate WAV
-                await new Promise<void>((resolve, reject) => {
-                    const process = cp.spawn(execPath, [
-                        '--output-file', tempWavPath,
-                        sourceFilePath
-                    ]);
-
-                    process.stderr?.on('data', (data) => {
-                        console.error(`ModDL error: ${data}`);
-                    });
-
-                    process.on('close', (code) => {
-                        if (code === 0) {
-                            resolve();
-                        } else {
-                            reject(new Error(`ModDL process exited with code ${code}`));
-                        }
-                    });
-
-                    process.on('error', reject);
-                });
+                await execModdl(execPath, [
+                    '--output-file', tempWavPath,
+                    sourceFilePath
+                ], token);
 
                 // Convert to desired format if needed
                 if (exportFormat !== 'wav') {
@@ -195,10 +216,15 @@ export function activate(context: vscode.ExtensionContext) {
                     await convertAudioFormat(tempWavPath, outputPath, ffmpegPath);
                 }
             });
-
             vscode.window.showInformationMessage(`Audio exported successfully to ${outputPath}`);
         } catch (err) {
-            vscode.window.showErrorMessage(`Failed to export audio: ${err}`);
+            if (err instanceof Error && err.message === 'Operation cancelled') {
+                vscode.window.showInformationMessage('Export cancelled');
+            } else {
+                vscode.window.showErrorMessage(`Failed to export audio: ${err}`);
+            }
+        } finally {
+            exportTokenSource.dispose();
         }
     });
 
@@ -206,8 +232,5 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
-    if (currentProcess) {
-        currentProcess.kill();
-        currentProcess = undefined;
-    }
+    // Ensure any remaining token sources are disposed
 }

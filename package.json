@@ -2,7 +2,7 @@
   "name": "moddl",
   "displayName": "ModDL Language Support",
   "description": "ModDL language support with syntax highlighting and playback controls",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "sylx",
   "private": true,
   "license": "MIT",
@@ -20,17 +20,26 @@
   "main": "./out/extension.js",
   "icon": "images/moddl-icon.png",
   "contributes": {
-    "languages": [{
-      "id": "moddl",
-      "aliases": ["ModDL", "moddl"],
-      "extensions": [".moddl"],
-      "configuration": "./language-configuration.json"
-    }],
-    "grammars": [{
-      "language": "moddl",
-      "scopeName": "source.moddl",
-      "path": "./syntaxes/moddl.tmLanguage.json"
-    }],
+    "languages": [
+      {
+        "id": "moddl",
+        "aliases": [
+          "ModDL",
+          "moddl"
+        ],
+        "extensions": [
+          ".moddl"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "moddl",
+        "scopeName": "source.moddl",
+        "path": "./syntaxes/moddl.tmLanguage.json"
+      }
+    ],
     "commands": [
       {
         "command": "moddl.play",
@@ -46,7 +55,7 @@
         "command": "moddl.export",
         "title": "ModDL: Export Audio File",
         "icon": "$(save)"
-      }      
+      }
     ],
     "keybindings": [
       {
@@ -78,13 +87,21 @@
         },
         "moddl.defaultOutputType": {
           "type": "string",
-          "enum": ["audio", "stdout", "null"],
+          "enum": [
+            "audio",
+            "stdout",
+            "null"
+          ],
           "default": "audio",
           "description": "Default output type for ModDL playback"
         },
         "moddl.exportFormat": {
           "type": "string",
-          "enum": ["wav", "mp3", "m4a"],
+          "enum": [
+            "wav",
+            "mp3",
+            "m4a"
+          ],
           "default": "wav",
           "description": "Default export format for audio files"
         },
@@ -92,7 +109,7 @@
           "type": "string",
           "default": "ffmpeg",
           "description": "Path to ffmpeg executable (required for mp3/m4a export)"
-        }        
+        }
       }
     }
   },
@@ -108,8 +125,8 @@
     "@types/vscode": "^1.96.0",
     "@typescript-eslint/eslint-plugin": "^5.42.0",
     "@typescript-eslint/parser": "^5.42.0",
+    "@vscode/vsce": "^2.24.0",
     "eslint": "^8.26.0",
-    "typescript": "^4.8.4",
-    "@vscode/vsce": "^2.24.0"
+    "typescript": "^4.8.4"
   }
 }
