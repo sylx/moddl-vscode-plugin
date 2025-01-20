@@ -3,6 +3,7 @@ import * as cp from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
+import { ModdlWebviewProvider } from './WebviewProvider';
 
 // Helper function to check if ffmpeg is available
 async function checkFfmpeg(ffmpegPath: string): Promise<boolean> {
@@ -105,6 +106,15 @@ const checkEditorIsModdlMode = (editor: vscode.TextEditor | undefined) => {
 export function activate(context: vscode.ExtensionContext) {
     // キャンセルトークンソースを保持
     let tokenSource: vscode.CancellationTokenSource | undefined;
+
+    // Webview provider
+    const provider = new ModdlWebviewProvider(context.extensionUri);
+    context.subscriptions.push({ dispose: () => provider.dispose() });
+
+    // Open webview command
+    const openWebviewCommand = vscode.commands.registerCommand('moddl.openWebview', () => {
+        provider.showPreview();
+    });
 
     // Existing play command
     const playCommand = vscode.commands.registerCommand('moddl.play', async () => {
@@ -234,7 +244,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    context.subscriptions.push(playCommand, stopCommand, exportCommand);
+    context.subscriptions.push(playCommand, stopCommand, exportCommand, openWebviewCommand);
 }
 
 export function deactivate() {

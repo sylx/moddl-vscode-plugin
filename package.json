@@ -55,6 +55,11 @@
         "command": "moddl.export",
         "title": "ModDL: Export Audio File",
         "icon": "$(save)"
+      },
+      {
+        "command": "moddl.openWebview",
+        "title": "ModDL: Toggle Graphical Editor",
+        "icon": "$(preview)"
       }
     ],
     "keybindings": [
@@ -75,8 +80,32 @@
         "key": "ctrl+shift+o",
         "mac": "cmd+shift+o",
         "when": "editorLangId == moddl"
+      },
+      {
+        "command": "moddl.openWebview",
+        "key": "ctrl+shift+e",
+        "mac": "cmd+shift+e",
+        "when": "editorLangId == moddl"
       }
     ],
+    "viewsContainers": {
+      "panel": [
+        {
+          "id": "moddl-preview",
+          "title": "ModDL Graphical Editor",
+          "icon": "images/moddl-icon.png"
+        }
+      ]
+    },
+    "views": {
+      "moddl-preview": [
+        {
+          "type": "webview",
+          "id": "moddl.graphicalEditor",
+          "name": "ModDL Graphical Editor"
+        }
+      ]
+    },
     "configuration": {
       "title": "ModDL",
       "properties": {
@@ -115,16 +144,18 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
+    "compile": "tsc -p ./ && npm run build:webview",
     "lint": "eslint src --ext ts",
-    "watch": "tsc -watch -p ./",
+    "watch": "concurrently \"tsc -watch -p ./\" \"npm run dev:webview\"",
     "package": "vsce package",
-    "build:docs": "tsx scripts/doc2md.ts ./moddl_docs ./moddl_docs.md"
+    "build:docs": "tsx scripts/doc2md.ts ./moddl_docs ./moddl_docs.md",
+    "build:webview": "vite build",
+    "dev:webview": "vite build --watch"
   },
   "devDependencies": {
     "@radix-ui/react-icons": "^1.3.2",
     "@radix-ui/react-slot": "^1.1.1",
-    "@types/node": "^16.18.124",
+    "@types/node": "^22.10.7",
     "@types/react": "^19.0.7",
     "@types/react-dom": "^19.0.3",
     "@types/turndown": "^5.0.5",
@@ -132,9 +163,11 @@
     "@typescript-eslint/eslint-plugin": "^5.42.0",
     "@typescript-eslint/parser": "^5.42.0",
     "@vscode/vsce": "^2.24.0",
+    "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.20",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "concurrently": "^8.2.2",
     "eslint": "^8.26.0",
     "jotai": "^2.11.0",
     "jsdom": "^26.0.0",
@@ -146,7 +179,8 @@
     "tailwindcss": "^3.4.17",
     "tsx": "^4.19.2",
     "turndown": "^7.2.0",
-    "typescript": "^4.8.4"
+    "typescript": "^4.8.4",
+    "vite": "^5.2.6"
   },
   "dependencies": {
     "chart.js": "^4.4.7",
