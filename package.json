@@ -11,7 +11,7 @@
     "url": "https://github.com/your-username/moddl-vscode"
   },
   "engines": {
-    "vscode": "^1.96.0"
+    "vscode": "^1.93.1"
   },
   "categories": [
     "Programming Languages",
@@ -124,7 +124,7 @@
   "devDependencies": {
     "@types/node": "^16.11.7",
     "@types/turndown": "^5.0.5",
-    "@types/vscode": "^1.96.0",
+    "@types/vscode": "^1.93.1",
     "@typescript-eslint/eslint-plugin": "^5.42.0",
     "@typescript-eslint/parser": "^5.42.0",
     "@vscode/vsce": "^2.24.0",
