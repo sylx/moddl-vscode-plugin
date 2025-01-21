@@ -149,7 +149,7 @@
     "watch": "concurrently \"tsc -watch -p ./\" \"npm run dev:webview\"",
     "package": "vsce package",
     "build:docs": "tsx scripts/doc2md.ts ./moddl_docs ./moddl_docs.md",
-    "build:webview": "vite build",
+    "build:webview": "vite build --mode development",
     "dev:webview": "vite build --watch"
   },
   "devDependencies": {

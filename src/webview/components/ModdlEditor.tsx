@@ -13,6 +13,7 @@ export const ModdlEditor: React.FC = () => {
 
   return (
     <div className="p-4">
+        hogehoge
       {editorMode === 'envelope' ? (
         <EnvelopeEditor cursorPosition={cursorPosition} />
       ) : (

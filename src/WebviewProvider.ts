@@ -15,6 +15,12 @@ export class ModdlWebviewProvider {
         if (e.document === vscode.window.activeTextEditor?.document) {
           this._update();
         }
+      }),
+      // カーソル位置の変更を監視
+      vscode.window.onDidChangeTextEditorSelection(e => {
+        if (e.textEditor === vscode.window.activeTextEditor) {
+          this._update();
+        }
       })
     );
   }
@@ -72,10 +78,9 @@ export class ModdlWebviewProvider {
       return;
     }
 
-    // エディタの内容をプレビューに送信
+    // メッセージタイプをcursorMoveに変更
     this._panel.webview.postMessage({
-      type: 'update',
-      content: editor.document.getText(),
+      type: 'cursorMove',
       position: {
         line: editor.selection.active.line,
         character: editor.selection.active.character

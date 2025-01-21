@@ -21,6 +21,7 @@ const App: React.FC = () => {
     // VSCodeからのメッセージを受け取る
     window.addEventListener('message', event => {
       const message = event.data;
+      console.log({ message });
       switch (message.type) {
         case 'cursorMove':
           setCursorPosition(message.position);
