@@ -13,7 +13,8 @@
 				"--extensionDevelopmentPath=${workspaceFolder}",
 				"${workspaceFolder}/example"
 			],
-			"preLaunchTask": "npm: compile",
+			"preLaunchTask": "npm: dev",
+			"postDebugTask": "terminate dev",
 			"sourceMaps": true,
 			"outFiles": ["${workspaceFolder}/out/**/*.js"]
 		}

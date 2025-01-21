@@ -145,12 +145,11 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./ && npm run build:webview",
-    "lint": "eslint src --ext ts",
-    "watch": "concurrently \"tsc -watch -p ./\" \"npm run dev:webview\"",
-    "package": "vsce package",
-    "build:docs": "tsx scripts/doc2md.ts ./moddl_docs ./moddl_docs.md",
-    "build:webview": "vite build --mode development",
-    "dev:webview": "vite build --watch"
+    "watch": "tsc -watch -p ./",
+    "watch:webview": "vite build --mode development --watch",
+    "dev": "concurrently \"npm run watch\" \"npm run watch:webview\"",
+    "build:webview": "vite build --mode production",
+    "package": "vsce package"
   },
   "devDependencies": {
     "@radix-ui/react-icons": "^1.3.2",

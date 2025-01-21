@@ -11,11 +11,44 @@
             "problemMatcher": ["$tsc"]
         },
         {
+            "label": "npm: dev",
             "type": "npm",
-            "script": "watch",
-            "group": "build",
+            "script": "dev",
             "isBackground": true,
-            "problemMatcher": ["$tsc-watch"]
+            "problemMatcher": [
+                {
+                    "base": "$tsc-watch",
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": "^.*starting compilation.*",
+                        "endsPattern": "^.*Watching for file changes.*"
+                    }
+                },
+                {
+                    "pattern": {
+                        "regexp": "^.*$"
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": "^.*VITE.*",
+                        "endsPattern": "^.*ready in.*$"
+                    }
+                }
+            ]
+        },
+        {
+            "label": "terminate dev",
+            "type": "shell",
+            "command": "echo ${input:terminate}",
+            "problemMatcher": []
+        }
+    ],
+    "inputs": [
+        {
+            "id": "terminate",
+            "type": "command",
+            "command": "workbench.action.tasks.terminate",
+            "args": "npm: dev"
         }
     ]
 } 
